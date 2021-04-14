@@ -20,4 +20,14 @@
         android:name="com.example.v_sion.fragments.TargetAppFragment"
         android:label="Target App"
         tools:layout="@layout/fragment_target_app" />
+    <fragment
+        android:id="@+id/profileFragment"
+        android:name="com.example.v_sion.fragments.ProfileFragment"
+        android:label="My Profile"
+        tools:layout="@layout/fragment_profile" />
+    <fragment
+        android:id="@+id/pastUsageFragment"
+        android:name="com.example.v_sion.fragments.PastUsageFragment"
+        android:label="Past Usage"
+        tools:layout="@layout/fragment_past_usage" />
 </navigation>
