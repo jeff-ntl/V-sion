@@ -2,26 +2,16 @@ package com.example.v_sion
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.view.MenuItem
-import android.widget.Toast
-import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.widget.Toolbar
-import androidx.core.view.GravityCompat
-import androidx.drawerlayout.widget.DrawerLayout
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.fragment.NavHostFragment.findNavController
+import androidx.navigation.ui.AppBarConfiguration
+import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
-import androidx.viewpager.widget.ViewPager
-import com.example.v_sion.fragments.FocusLockFragment
-import com.example.v_sion.fragments.HomeFragment
-import com.example.v_sion.fragments.TargetAppFragment
-import com.google.android.material.navigation.NavigationView
-import com.google.android.material.tabs.TabLayout
 import kotlinx.android.synthetic.main.activity_main.*
 
-//class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
 class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -31,16 +21,28 @@ class MainActivity : AppCompatActivity() {
         val toolbar: Toolbar = findViewById(R.id.toolbar)
         setSupportActionBar(toolbar)
 
-        val host: NavHostFragment = supportFragmentManager
-            .findFragmentById(R.id.navHostFragment) as NavHostFragment? ?: return
-
-        // Set up Action Bar
-        val navController = host.navController
-
-        setupBottomNavMenu(navController)
+        // Bottom Navigation
+        setupBottomNavMenu()
     }
 
-    fun setupBottomNavMenu(navController: NavController) {
+    private fun setupBottomNavMenu() {
+        // Finding the Navigation Controller
+        var navController = findNavController(R.id.navHostFragment)
+
         bottom_nav_view.setupWithNavController(navController)
+
+        // Setting Up ActionBar with Navigation Controller
+        // Pass the IDs of top-level destinations in AppBarConfiguration
+        var appBarConfiguration = AppBarConfiguration(
+            topLevelDestinationIds = setOf (
+                R.id.targetAppFragment,
+                R.id.homeFragment,
+                R.id.focusLockFragment
+            )
+        )
+        // change toolbar label
+        setupActionBarWithNavController(navController, appBarConfiguration)
     }
+
+
 }
