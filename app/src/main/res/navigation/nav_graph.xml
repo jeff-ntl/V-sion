@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/homeFragment">
+
+    <fragment
+        android:id="@+id/homeFragment"
+        android:name="com.example.v_sion.fragments.HomeFragment"
+        android:label="fragment_home"
+        tools:layout="@layout/fragment_home" />
+    <fragment
+        android:id="@+id/focusLockFragment"
+        android:name="com.example.v_sion.fragments.FocusLockFragment"
+        android:label="fragment_focus_lock"
+        tools:layout="@layout/fragment_focus_lock" />
+    <fragment
+        android:id="@+id/targetAppFragment"
+        android:name="com.example.v_sion.fragments.TargetAppFragment"
+        android:label="fragment_target_app"
+        tools:layout="@layout/fragment_target_app" />
+</navigation>
