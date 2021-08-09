@@ -3,16 +3,134 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".fragments.HomeFragment">
 
-    <RelativeLayout
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
-        <TextView
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_centerInParent="true"
-            android:text="Home"
-            />
-    </RelativeLayout>
+            android:layout_height="wrap_content"
+            android:padding="@dimen/layout_padding">
+
+            <TextView
+                android:id="@+id/instruction"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/swipe_down_to_refresh_text"
+                android:textColor="@color/cyan"
+                android:textSize="@dimen/text_size_18sp" />
+
+
+            <TextView
+                android:id="@+id/targetTimeText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_above="@+id/totalTimeCount"
+                android:layout_toStartOf="@+id/targetTimeCount"
+                android:text="@string/target_time_text"
+                android:textSize="@dimen/text_size_12sp"
+                android:layout_toLeftOf="@+id/targetTimeCount" />
+
+            <TextView
+                android:id="@+id/targetTimeCount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_above="@+id/totalTimeCount"
+                android:layout_alignParentEnd="true"
+                android:text="2h 0m"
+                android:textSize="@dimen/text_size_12sp"
+                android:textStyle="bold"
+                android:layout_alignParentRight="true" />
+
+
+            <TextView
+                android:id="@+id/totalTimeText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/instruction"
+                android:layout_toStartOf="@+id/totalTimeCount"
+                android:text="@string/total_time_text"
+                android:textSize="@dimen/text_size_12sp"
+                android:layout_toLeftOf="@+id/totalTimeCount" />
+
+            <TextView
+                android:id="@+id/totalTimeCount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/instruction"
+                android:layout_alignParentEnd="true"
+                android:text="0h 0m 0s"
+                android:textSize="@dimen/text_size_12sp"
+                android:textStyle="bold"
+                android:layout_alignParentRight="true" />
+
+
+            <TextView
+                android:id="@+id/startTimeText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/totalTimeCount"
+                android:layout_alignParentStart="true"
+                android:text="@string/start_from_text"
+                android:textSize="@dimen/text_size_12sp"
+                android:layout_alignParentLeft="true" />
+
+            <TextView
+                android:id="@+id/currentTimeText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/totalTimeCount"
+                android:layout_toStartOf="@+id/currentTimeCount"
+                android:text="@string/till_text"
+                android:textSize="@dimen/text_size_12sp"
+                android:layout_toLeftOf="@+id/currentTimeCount" />
+
+
+            <TextView
+                android:id="@+id/startTimeCount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/totalTimeCount"
+                android:layout_toEndOf="@+id/startTimeText"
+                android:text="@string/unknown_time_text"
+                android:textSize="@dimen/text_size_12sp"
+                android:textStyle="bold"
+                android:layout_toRightOf="@+id/startTimeText" />
+
+            <TextView
+                android:id="@+id/currentTimeCount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/totalTimeCount"
+                android:layout_alignParentEnd="true"
+                android:text="@string/unknown_time_text"
+                android:textSize="@dimen/text_size_12sp"
+                android:textStyle="bold"
+                android:layout_alignParentRight="true" />
+
+        </RelativeLayout>
+
+        <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+            android:id="@+id/itemsswipetorefresh"
+            android:layout_width="wrap_content"
+            android:layout_height="0px"
+            android:layout_weight="1">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/my_recycler_view"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scrollbars="vertical" />
+
+        </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+    </LinearLayout>
 </FrameLayout>
