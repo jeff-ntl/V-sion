@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -116,6 +117,15 @@
                 android:textStyle="bold"
                 android:layout_alignParentRight="true" />
 
+            <TextView
+                android:id="@+id/usageDataTxt"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_below="@+id/currentTimeCount"
+                android:text="DATA"
+                android:textSize="@dimen/text_size_12sp"
+            />
+
         </RelativeLayout>
 
         <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
@@ -129,6 +139,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:scrollbars="vertical" />
+
+
 
         </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
