@@ -104,15 +104,17 @@ class HomeFragment : Fragment(), AnkoLogger {
         //  List<UsageEvents.Event> allEvents = new ArrayList<>();
         val map: HashMap<String, ResultModel> = HashMap()
         val sameEvents: HashMap<String, MutableList<UsageEvents.Event>> = HashMap()
+
         // access to usage data
-        val mUsageStatsManager =
-            requireContext().getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
+        val mUsageStatsManager = requireContext().getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
+
         if (mUsageStatsManager != null) {
             // query events data from starting time to end time
             val usageEvents = mUsageStatsManager.queryEvents(start_time, end_time)
             info("Usage Events: " + usageEvents)
 
             // Put these data into the map
+            // Iterate through each events
             while (usageEvents.hasNextEvent()) {
                 currentEvent = UsageEvents.Event()
                 info("Current Usage Events: " + currentEvent)
@@ -122,44 +124,43 @@ class HomeFragment : Fragment(), AnkoLogger {
                 ) {
                     //  allEvents.add(currentEvent);
                     val key = currentEvent.packageName
+                    // these code will be executed if the app (key is the package name) is not found in map
                     if (map[key] == null) {
                         //ResultModel: (packagename), 0, 0
+                        // add the app into map
                         map[key] = ResultModel(key)
-                        //map.put(key, ResultModel(key))
+                        // an arrayList is added as a value of the app into sameEvents
                         sameEvents[key] = ArrayList<UsageEvents.Event>()
                     }
+                    // if we already have an entry of the app in map, add the event into the arraylist in sameEvents
                     sameEvents[key]!!.add(currentEvent)
                 }
             }
             info("map: "+ map)
             info("sameEvents map: "+ sameEvents)
 
-
             // Traverse through each app data which is grouped together and count launch, calculate duration
             for ((_, value) in sameEvents.entries) {
                 val totalEvents = value.size
-                // if we have >1 events...
+                // if the app has >1 events...
+                // eventType = 1: RESUMED (moved to foreground); 2: PAUSED (moved to background)
                 if (totalEvents > 1) {
                     for (i in 0 until totalEvents - 1) {
                         val E0 = value[i]
                         val E1 = value[i + 1]
+                        // calculate launch count whenever the ACTIVITY is RESUMED (moved to foreground)
                         if (E1.eventType == 1 || E0.eventType == 1) {
-                            //map[E1.packageName].launchCount += 1
                             var appLaunchCount : Long = map.get(E0.packageName)!!.launchCount
                             appLaunchCount += 1
                             map[E1.packageName]!!.launchCount = appLaunchCount
-                            //map[E1.packageName].put(ResultModel(E1.packageName, ));
                         }
+                        // calculate screen time => E0 : the app is opened (moved to foreground); E1: moved to background
                         if (E0.eventType == 1 && E1.eventType == 2) {
                             val diff : Long = E1.timeStamp - E0.timeStamp
                             var appTime : Long = map.get(E0.packageName)!!.timeInForeground
                             appTime += diff
-                            //map[E0.packageName]?.timeInForeground ?:  += diff
-                            //map.put(E0.packageName,());
                             map[E0.packageName]!!.timeInForeground = appTime
                         }
-                        //map[E1.packageName] = (ResultModel(E1.packageName, appTime, appLaunchCount));
-
                     }
                 }
 
@@ -170,6 +171,7 @@ class HomeFragment : Fragment(), AnkoLogger {
                 }
 
                 // If Last eventtype is ACTIVITY_RESUMED then added the difference of end_time and Event occuring time because the application is still running .
+                // This is a rare case designed specifically for the V-sion app only.
                 if (value[totalEvents - 1].eventType == 1) {
                     val diff = end_time - value[totalEvents - 1].timeStamp
                     map[value[totalEvents - 1].packageName]!!.timeInForeground += diff
