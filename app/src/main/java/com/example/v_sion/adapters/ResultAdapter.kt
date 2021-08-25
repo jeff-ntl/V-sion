@@ -17,7 +17,8 @@ class ResultAdapter(private var results: List<ResultModel>):
         fun bind(result: ResultModel) {
             itemView.appIcon.setImageBitmap(result.appIcon)
             itemView.appName.text = result.appName
-            itemView.timeInForeground.text = result.timeInForeground.toString()
+            itemView.timeInForeground.text = result.timeInForegroundString
+            itemView.launchCount.text = result.launchCount.toString()
         }
     }
 

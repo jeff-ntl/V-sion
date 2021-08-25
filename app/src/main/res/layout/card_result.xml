@@ -38,6 +38,14 @@ android:layout_height="wrap_content">
             android:id="@+id/timeInForeground"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_toStartOf="@+id/launchCount"
+            android:layout_marginEnd="8dp"
+            android:textSize="@dimen/text_size_12sp" />
+
+        <TextView
+            android:id="@+id/launchCount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
             android:textSize="@dimen/text_size_12sp" />
 

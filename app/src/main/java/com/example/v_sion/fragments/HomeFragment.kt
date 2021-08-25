@@ -208,7 +208,8 @@ class HomeFragment : Fragment(), AnkoLogger {
                         val E0 = value[i]
                         val E1 = value[i + 1]
                         // calculate launch count whenever the ACTIVITY is RESUMED (moved to foreground)
-                        if (E1.eventType == 1 || E0.eventType == 1) {
+                        // E0 is very likely to be 1, so we're looking at E1 only here to calculate launch count. We're neglecting the very first event as the default value of launchCount =1
+                        if (E1.eventType == 1 ) {
                             var appLaunchCount : Long = map.get(E0.packageName)!!.launchCount
                             appLaunchCount += 1
                             map[E1.packageName]!!.launchCount = appLaunchCount
@@ -229,7 +230,7 @@ class HomeFragment : Fragment(), AnkoLogger {
                     map[value[0].packageName]!!.timeInForeground += diff
                 }
 
-                // If Last eventtype is ACTIVITY_RESUMED then added the difference of end_time and Event occuring time because the application is still running .
+                // If Last eventtype is ACTIVITY_RESUMED then added the difference of end_time and Event occuring time because the application is still running.
                 // This is a rare case designed specifically for the V-sion app only.
                 if (value[totalEvents - 1].eventType == 1) {
                     val diff = end_time - value[totalEvents - 1].timeStamp
@@ -243,7 +244,7 @@ class HomeFragment : Fragment(), AnkoLogger {
             for (appUsageInfo in smallInfoList) {
                 strMsg += (convertToAppName(appUsageInfo.packageName.toString()) + " : " + convertTime(appUsageInfo.timeInForeground) + " : " + appUsageInfo.launchCount + "\n\n")
                 results.add(ResultModel(appUsageInfo.packageName.toString(), getAppIcon(appUsageInfo.packageName.toString()), convertToAppName(
-                    appUsageInfo.packageName.toString()), appUsageInfo.timeInForeground, appUsageInfo.launchCount))
+                    appUsageInfo.packageName.toString()), appUsageInfo.timeInForeground, convertTime(appUsageInfo.timeInForeground), appUsageInfo.launchCount))
             }
             info("strMsg: " + strMsg)
             info("strMsg: " + results)

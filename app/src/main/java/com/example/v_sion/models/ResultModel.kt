@@ -11,5 +11,6 @@ data class ResultModel(
     var appIcon: Bitmap ?= null,
     var appName: String? = null,
     var timeInForeground : Long = 0,
-    var launchCount : Long = 0
+    var timeInForegroundString : String? = null,
+    var launchCount : Long = 1
 ):Parcelable
