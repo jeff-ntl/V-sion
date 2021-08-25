@@ -5,18 +5,27 @@ import android.app.usage.UsageEvents
 import android.app.usage.UsageStatsManager
 import android.content.Context
 import android.content.Intent
+import android.content.pm.ApplicationInfo
+import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.RequiresApi
+import androidx.core.content.ContextCompat
+import androidx.core.graphics.drawable.toBitmap
 import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.v_sion.R
+import com.example.v_sion.adapters.ResultAdapter
 import com.example.v_sion.models.ResultModel
+import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.fragment_home.*
 import kotlinx.android.synthetic.main.fragment_home.view.*
 import org.jetbrains.anko.AnkoLogger
@@ -33,6 +42,15 @@ private var end_time = System.currentTimeMillis()
 private val start_time: Calendar = Calendar.getInstance()
 
 private var strMsg : String = ""
+
+// for recyclerView
+private lateinit var recyclerView: RecyclerView
+private lateinit var viewAdapter: RecyclerView.Adapter<*>
+private lateinit var viewManager: RecyclerView.LayoutManager
+
+//for storing result from userStatsManager
+private var results = mutableListOf<ResultModel>()
+
 
 
 /**
@@ -52,11 +70,28 @@ class HomeFragment : Fragment(), AnkoLogger {
         start_time.set(Calendar.SECOND, 0)
         start_time.set(Calendar.MILLISECOND, 0)
 
-        //do these if user has granted permission
+    }
+
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        val view = inflater.inflate(R.layout.fragment_home, container, false)
+
+        // Inflate the layout for this fragment
+        return view
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+//do these if user has granted permission
         if (checkUsageStatsPermission(activity?.applicationContext)) {
             info("Permission Granted.")
 
             getUsageStatistics(start_time.timeInMillis, end_time)
+            //view.usageDataTxt.text = strMsg
+            showUsageStats()
 /*
             totalTime = getUsageStats()
             showUsageStats()
@@ -69,18 +104,40 @@ class HomeFragment : Fragment(), AnkoLogger {
         } else {
             startActivity(Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS))
         }
+
+        //set the colors of the Pull To Refresh View
+        itemsswipetorefresh.setProgressBackgroundColorSchemeColor(ContextCompat.getColor(requireContext(),R.color.cyan))
+        itemsswipetorefresh.setColorSchemeColors(Color.WHITE)
+        //do these... when user swipes down
+        itemsswipetorefresh.setOnRefreshListener{
+            getUsageStatistics(start_time.timeInMillis, end_time)
+            showUsageStats()
+            itemsswipetorefresh.isRefreshing = false
+            /*
+            totalTime = getUsageStats()
+            showUsageStats()
+            showTimeTracking()
+            targetAchieved = compareTimeSpent(targetTimeCount.text.toString(),totalTimeCount.text.toString())
+            itemsswipetorefresh.isRefreshing = false
+            scheduleGetUsageStats()
+            */
+
+        }
     }
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
+    //for recyclerview...
+    private fun showUsageStats(){
+        viewManager = LinearLayoutManager(activity)
+        viewAdapter = ResultAdapter(results)
 
-        val view = inflater.inflate(R.layout.fragment_home, container, false)
-        view.usageDataTxt.text = strMsg
+        recyclerView = my_recycler_view.apply {
 
-        // Inflate the layout for this fragment
-        return view
+            // use a linear layout manager
+            layoutManager = viewManager
+            // specify an viewAdapter
+            adapter = viewAdapter
+        }
+
     }
 
     // to check if user has granted permission to the app.
@@ -97,7 +154,6 @@ class HomeFragment : Fragment(), AnkoLogger {
         return mode == AppOpsManager.MODE_ALLOWED
     }
 
-
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     private fun getUsageStatistics(start_time: Long, end_time: Long) {
         var currentEvent: UsageEvents.Event
@@ -108,8 +164,12 @@ class HomeFragment : Fragment(), AnkoLogger {
         // access to usage data
         val mUsageStatsManager = requireContext().getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
 
+        results.clear()
+
+
         if (mUsageStatsManager != null) {
             // query events data from starting time to end time
+            info("end time: " + end_time)
             val usageEvents = mUsageStatsManager.queryEvents(start_time, end_time)
             info("Usage Events: " + usageEvents)
 
@@ -178,19 +238,53 @@ class HomeFragment : Fragment(), AnkoLogger {
                 }
             }
 
-
             var smallInfoList: ArrayList<ResultModel> = ArrayList(map.values)
 
             // Concatenating data to show in a text view. You may do according to your requirement
             for (appUsageInfo in smallInfoList) {
-                // Do according to your requirement
-                strMsg += (appUsageInfo.packageName.toString() + " : " + convertTime(appUsageInfo.timeInForeground) + "\n\n")
+                strMsg += (convertToAppName(appUsageInfo.packageName.toString()) + " : " + convertTime(appUsageInfo.timeInForeground) + " : " + appUsageInfo.launchCount + "\n\n")
+                results.add(ResultModel(appUsageInfo.packageName.toString(), getAppIcon(appUsageInfo.packageName.toString()), convertToAppName(
+                    appUsageInfo.packageName.toString()), appUsageInfo.timeInForeground, appUsageInfo.launchCount))
             }
             info("strMsg: " + strMsg)
-            //usageDataTxt.text = "aaa"
+            info("strMsg: " + results)
+            results.sortByDescending { it.timeInForeground }
         } else {
             Toast.makeText(context, "Sorry...", Toast.LENGTH_SHORT).show()
         }
+    }
+
+    //convert packagename(eg: ie.wit.tracko for this app) obtained from UsageStatsManager to app name (eg: Tracko)
+    private fun convertToAppName(packageName: String):String{
+        //val packageManager: PackageManager = applicationContext.packageManager
+        val packageManager: PackageManager = requireContext().packageManager
+
+        var applicationInfo: ApplicationInfo?
+        lateinit var applicationName: String
+
+        try{
+            applicationInfo = packageManager.getApplicationInfo(packageName, 0)
+        }catch(e: PackageManager.NameNotFoundException){
+            applicationInfo = null
+        }
+        if(applicationInfo == null){
+            applicationName = "Unknown"
+        }else{
+            applicationName = packageManager.getApplicationLabel(applicationInfo).toString()
+        }
+        info("Application tracked: " + applicationName)
+
+        return applicationName
+    }
+
+    //get app icon by giving known package name.
+    private fun getAppIcon(packageName: String): Bitmap {
+        val appIconBitMap: Bitmap?
+        //info("icon is: " + packageManager.getApplicationIcon(packageName))
+        //appIconBitMap = packageManager.getApplicationIcon(packageName).toBitmap()
+        //info("icon is: " + requireContext().packageManager.getApplicationIcon(packageName))
+        appIconBitMap = requireContext().packageManager.getApplicationIcon(packageName).toBitmap()
+        return appIconBitMap
     }
 
     // Convert Time in ms (Long) to "1h 2m 3s" (String)
@@ -200,4 +294,6 @@ class HomeFragment : Fragment(), AnkoLogger {
         val seconds = ((count/ 1000) % 60).toInt()
         return "" + hours + "h " + minutes + "m " + seconds + "s"
     }
+
+
 }
