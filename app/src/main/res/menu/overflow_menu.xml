@@ -18,11 +18,11 @@
         android:id="@+id/profileFragment"
         android:icon="@drawable/ic_baseline_profile"
         android:orderInCategory="1"
-        android:title="My Profile"
+        android:title="@string/menu_item_my_profile_text"
         app:showAsAction="never" />
     <item android:id="@+id/pastUsageFragment"
         android:icon="@drawable/ic_baseline_record"
         android:orderInCategory="2"
-        android:title="Past Usage"
+        android:title="@string/menu_item_past_usage_text"
         app:showAsAction="never" />
 </menu>

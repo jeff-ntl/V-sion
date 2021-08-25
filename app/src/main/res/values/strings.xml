@@ -12,4 +12,6 @@
     <string name="till_text">Till:</string>
     <string name="menu_item_search_text">Search</string>
     <string name="menu_item_timer_text">Timer</string>
+    <string name="menu_item_my_profile_text">My Profile</string>
+    <string name="menu_item_past_usage_text">Past Usage</string>
 </resources>

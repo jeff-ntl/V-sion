@@ -13,8 +13,10 @@ import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.view.*
+import android.widget.EditText
 import android.widget.Toast
 import androidx.annotation.RequiresApi
+import androidx.appcompat.widget.SearchView
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmap
 import androidx.fragment.app.Fragment
@@ -47,8 +49,10 @@ private lateinit var recyclerView: RecyclerView
 private lateinit var viewAdapter: RecyclerView.Adapter<*>
 private lateinit var viewManager: RecyclerView.LayoutManager
 
-//for storing result from userStatsManager
+//for storing result obtained from userStatsManager
 private var results = mutableListOf<ResultModel>()
+//for search view
+private var searchResults = mutableListOf<ResultModel>()
 
 private var totalTime : String = ""
 
@@ -88,11 +92,48 @@ class HomeFragment : Fragment(), AnkoLogger {
     // for showing the search icon on menu
     override fun onPrepareOptionsMenu(menu: Menu) {
         super.onPrepareOptionsMenu(menu)
-
         menu.findItem(R.id.menu_search)?.setVisible(true)
+
+        val searchItem = menu.findItem(R.id.menu_search)
+
+        //for searching
+        if(searchItem != null){
+            val searchView = searchItem.actionView as SearchView
+            //set search hint here
+            val searchTextHint = searchView.findViewById<EditText>(androidx.appcompat.R.id.search_src_text)
+            searchTextHint.hint = "Search for an app..."
+
+            searchView.setOnQueryTextListener(object: SearchView.OnQueryTextListener{
+                override fun onQueryTextSubmit(p0: String?): Boolean {
+                    //not using it at the moment
+                    return true
+                }
+
+                //do these... when text in the search box is changing
+                override fun onQueryTextChange(p0: String?): Boolean {
+
+                    //do these... when there's input in the search box
+                    if(p0!!.isNotEmpty()){
+                        searchResults.clear()
+                        val search = p0.toLowerCase()
+                        results.forEach{
+                            if(it.appName!!.toLowerCase().contains(search)){
+                                searchResults.add(it)
+                            }
+                        }
+                        recyclerView.adapter?.notifyDataSetChanged()
+                    }else{
+                        searchResults.clear()
+                        searchResults.addAll(results)
+                        recyclerView.adapter?.notifyDataSetChanged()
+                    }
+                    return true
+                }
+            })
+        }
+        //return true
+        //return super.onCreateOptionsMenu(menu)
     }
-
-
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -135,7 +176,7 @@ class HomeFragment : Fragment(), AnkoLogger {
     //for recyclerview...
     private fun showUsageStats(){
         viewManager = LinearLayoutManager(activity)
-        viewAdapter = ResultAdapter(results)
+        viewAdapter = ResultAdapter(searchResults)
 
         recyclerView = my_recycler_view.apply {
 
@@ -175,6 +216,7 @@ class HomeFragment : Fragment(), AnkoLogger {
         var totalTime : Long = 0
 
         results.clear()
+        searchResults.clear()
 
         if (mUsageStatsManager != null) {
             // query events data from starting time to end time
@@ -262,6 +304,7 @@ class HomeFragment : Fragment(), AnkoLogger {
             //info("strMsg: " + strMsg)
             info("strMsg: " + results)
             results.sortByDescending { it.timeInForeground }
+            searchResults.addAll(results)
         } else {
             Toast.makeText(context, "Sorry...", Toast.LENGTH_SHORT).show()
         }
