@@ -169,8 +169,7 @@ class HomeFragment : Fragment(), AnkoLogger {
 
         if (mUsageStatsManager != null) {
             // query events data from starting time to end time
-            info("end time: " + end_time)
-            val usageEvents = mUsageStatsManager.queryEvents(start_time, end_time)
+            val usageEvents = mUsageStatsManager.queryEvents(start_time, System.currentTimeMillis())
             info("Usage Events: " + usageEvents)
 
             // Put these data into the map
