@@ -12,9 +12,7 @@ import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
@@ -66,6 +64,8 @@ class HomeFragment : Fragment(), AnkoLogger {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        //for showing the search icon on menu
+        setHasOptionsMenu(true)
         //get the today date at 0:00:00.000 (beginning of the day)
         start_time.add(Calendar.DATE, 0)
         start_time.set(Calendar.HOUR_OF_DAY, 0)
@@ -84,6 +84,15 @@ class HomeFragment : Fragment(), AnkoLogger {
         // Inflate the layout for this fragment
         return view
     }
+
+    // for showing the search icon on menu
+    override fun onPrepareOptionsMenu(menu: Menu) {
+        super.onPrepareOptionsMenu(menu)
+
+        menu.findItem(R.id.menu_search)?.setVisible(true)
+    }
+
+
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)

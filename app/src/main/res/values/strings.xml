@@ -10,4 +10,6 @@
     <string name="start_from_text">Start From:</string>
     <string name="unknown_time_text">--:--:--</string>
     <string name="till_text">Till:</string>
+    <string name="menu_item_search_text">Search</string>
+    <string name="menu_item_timer_text">Timer</string>
 </resources>
