@@ -30,6 +30,7 @@ import kotlinx.android.synthetic.main.fragment_home.*
 import kotlinx.android.synthetic.main.fragment_home.view.*
 import org.jetbrains.anko.AnkoLogger
 import org.jetbrains.anko.info
+import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
@@ -50,6 +51,8 @@ private lateinit var viewManager: RecyclerView.LayoutManager
 
 //for storing result from userStatsManager
 private var results = mutableListOf<ResultModel>()
+
+private var totalTime : String = ""
 
 
 
@@ -85,17 +88,14 @@ class HomeFragment : Fragment(), AnkoLogger {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-//do these if user has granted permission
+        //do these if user has granted permission
         if (checkUsageStatsPermission(activity?.applicationContext)) {
             info("Permission Granted.")
 
-            getUsageStatistics(start_time.timeInMillis, end_time)
-            //view.usageDataTxt.text = strMsg
-            showUsageStats()
-/*
-            totalTime = getUsageStats()
+            totalTime = getUsageStatistics(start_time.timeInMillis, end_time)
             showUsageStats()
             showTimeTracking()
+/*
             //load target time saved, if any.
             loadTargetTime()
             targetAchieved = compareTimeSpent(targetTimeCount.text.toString(),totalTimeCount.text.toString())
@@ -110,13 +110,11 @@ class HomeFragment : Fragment(), AnkoLogger {
         itemsswipetorefresh.setColorSchemeColors(Color.WHITE)
         //do these... when user swipes down
         itemsswipetorefresh.setOnRefreshListener{
-            getUsageStatistics(start_time.timeInMillis, end_time)
-            showUsageStats()
-            itemsswipetorefresh.isRefreshing = false
-            /*
-            totalTime = getUsageStats()
+            totalTime = getUsageStatistics(start_time.timeInMillis, end_time)
             showUsageStats()
             showTimeTracking()
+            itemsswipetorefresh.isRefreshing = false
+            /*
             targetAchieved = compareTimeSpent(targetTimeCount.text.toString(),totalTimeCount.text.toString())
             itemsswipetorefresh.isRefreshing = false
             scheduleGetUsageStats()
@@ -155,7 +153,7 @@ class HomeFragment : Fragment(), AnkoLogger {
     }
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-    private fun getUsageStatistics(start_time: Long, end_time: Long) {
+    private fun getUsageStatistics(start_time: Long, end_time: Long): String {
         var currentEvent: UsageEvents.Event
         //  List<UsageEvents.Event> allEvents = new ArrayList<>();
         val map: HashMap<String, ResultModel> = HashMap()
@@ -164,8 +162,10 @@ class HomeFragment : Fragment(), AnkoLogger {
         // access to usage data
         val mUsageStatsManager = requireContext().getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
 
-        results.clear()
+        // store total screen time
+        var totalTime : Long = 0
 
+        results.clear()
 
         if (mUsageStatsManager != null) {
             // query events data from starting time to end time
@@ -220,6 +220,7 @@ class HomeFragment : Fragment(), AnkoLogger {
                             var appTime : Long = map.get(E0.packageName)!!.timeInForeground
                             appTime += diff
                             map[E0.packageName]!!.timeInForeground = appTime
+                            totalTime += diff
                         }
                     }
                 }
@@ -228,30 +229,35 @@ class HomeFragment : Fragment(), AnkoLogger {
                 if (value[0].eventType == 2) {
                     val diff = value[0].timeStamp - start_time
                     map[value[0].packageName]!!.timeInForeground += diff
+                    totalTime += diff
                 }
-
+                /*
+                TODO("seems like not working" )
                 // If Last eventtype is ACTIVITY_RESUMED then added the difference of end_time and Event occuring time because the application is still running.
                 // This is a rare case designed specifically for the V-sion app only.
                 if (value[totalEvents - 1].eventType == 1) {
                     val diff = end_time - value[totalEvents - 1].timeStamp
                     map[value[totalEvents - 1].packageName]!!.timeInForeground += diff
                 }
+                 */
             }
 
             var smallInfoList: ArrayList<ResultModel> = ArrayList(map.values)
 
             // Concatenating data to show in a text view. You may do according to your requirement
             for (appUsageInfo in smallInfoList) {
-                strMsg += (convertToAppName(appUsageInfo.packageName.toString()) + " : " + convertTime(appUsageInfo.timeInForeground) + " : " + appUsageInfo.launchCount + "\n\n")
+                //strMsg += (convertToAppName(appUsageInfo.packageName.toString()) + " : " + convertTime(appUsageInfo.timeInForeground) + " : " + appUsageInfo.launchCount + "\n\n")
                 results.add(ResultModel(appUsageInfo.packageName.toString(), getAppIcon(appUsageInfo.packageName.toString()), convertToAppName(
                     appUsageInfo.packageName.toString()), appUsageInfo.timeInForeground, convertTime(appUsageInfo.timeInForeground), appUsageInfo.launchCount))
             }
-            info("strMsg: " + strMsg)
+            //info("strMsg: " + strMsg)
             info("strMsg: " + results)
             results.sortByDescending { it.timeInForeground }
         } else {
             Toast.makeText(context, "Sorry...", Toast.LENGTH_SHORT).show()
         }
+
+        return convertTime(totalTime)
     }
 
     //convert packagename(eg: ie.wit.tracko for this app) obtained from UsageStatsManager to app name (eg: Tracko)
@@ -272,8 +278,6 @@ class HomeFragment : Fragment(), AnkoLogger {
         }else{
             applicationName = packageManager.getApplicationLabel(applicationInfo).toString()
         }
-        info("Application tracked: " + applicationName)
-
         return applicationName
     }
 
@@ -293,6 +297,19 @@ class HomeFragment : Fragment(), AnkoLogger {
         val minutes = ((count / (1000*60)) % 60).toInt()
         val seconds = ((count/ 1000) % 60).toInt()
         return "" + hours + "h " + minutes + "m " + seconds + "s"
+    }
+
+    private fun convertTime2(lastTimeUsed: Long):String{
+        val date = Date(lastTimeUsed)
+        val format = SimpleDateFormat("hh:mm a", Locale.ENGLISH)
+        return format.format(date)
+    }
+
+    //update current time and total time spent on phone.
+    private fun showTimeTracking(){
+        startTimeCount.text = convertTime2(start_time.timeInMillis)
+        currentTimeCount.text = convertTime2(System.currentTimeMillis())
+        totalTimeCount.text = totalTime
     }
 
 
