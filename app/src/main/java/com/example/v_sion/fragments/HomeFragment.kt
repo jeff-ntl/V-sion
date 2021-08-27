@@ -26,6 +26,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.v_sion.R
 import com.example.v_sion.adapters.ResultAdapter
+import com.example.v_sion.main.MainApp
+import com.example.v_sion.models.HistoryModel
 import com.example.v_sion.models.ResultModel
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.fragment_home.*
@@ -37,6 +39,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
+import kotlin.concurrent.timerTask
 import com.example.v_sion.fragments.TimerFragment as TimerFragment1
 
 
@@ -45,6 +48,7 @@ private var hour_in_mil = (1000 * 60 * 60).toLong()
 private var end_time = System.currentTimeMillis()
 //private var start_time = end_time - hour_in_mil
 private val start_time: Calendar = Calendar.getInstance()
+private val updateCal: Calendar = Calendar.getInstance()
 
 private var strMsg : String = ""
 
@@ -66,6 +70,11 @@ private val TARGET = "target"
 //will be reassign with either 'true' or 'false' when 1)onCreate 2)refreshed 3)target time is changed (when compareTimeSpent is called)
 private var targetAchieved = "N/A"
 
+lateinit var app: MainApp
+//user id
+private lateinit var uid:String
+private lateinit var user_email:String
+
 /**
  * A simple [Fragment] subclass.
  * Use the [HomeFragment.newInstance] factory method to
@@ -75,6 +84,12 @@ class HomeFragment : Fragment(), AnkoLogger {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        app = requireActivity().application as MainApp
+
+        //get current user id when MainActivity is created
+        uid = app.auth.currentUser!!.uid
+        user_email = app.auth.currentUser!!.email.toString()
 
         //for showing the search icon on menu
         setHasOptionsMenu(true)
@@ -162,9 +177,7 @@ class HomeFragment : Fragment(), AnkoLogger {
             //load target time saved, if any.
             loadTargetTime()
             compareTimeSpent(targetTimeCount.text.toString(),totalTimeCount.text.toString())
-/*
             scheduleGetUsageStats()
-*/
         } else {
             startActivity(Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS))
         }
@@ -177,13 +190,9 @@ class HomeFragment : Fragment(), AnkoLogger {
             totalTime = getUsageStatistics(start_time.timeInMillis, end_time)
             showUsageStats()
             showTimeTracking()
-            itemsswipetorefresh.isRefreshing = false
             compareTimeSpent(targetTimeCount.text.toString(),totalTimeCount.text.toString())
-            /*
             itemsswipetorefresh.isRefreshing = false
             scheduleGetUsageStats()
-            */
-
         }
     }
 
@@ -214,6 +223,32 @@ class HomeFragment : Fragment(), AnkoLogger {
         )
         //val mode: Int = appOpsManager.unsafeCheckOpNoThrow(AppOpsManager.OPSTR_GET_USAGE_STATS, applicationInfo.uid, applicationInfo.packageName)
         return mode == AppOpsManager.MODE_ALLOWED
+    }
+
+    private fun scheduleGetUsageStats(){
+        /*
+        * timer work as expected, set to 23,59,0 (11:59:00 PM) to allow 1min for the app to run the method,
+        * NOT SETTING to 23,59,59,999 (11:59:00.999 PM) because when the app calls the method, it might has already been the next day and you will lose all usage data
+        * 23,29,59 makes it not tracking 24hrs usage but provide durability to the app
+        * interval is set to 24hrs, if the user opened the app on ytd, but never open tdy, u still get to call the method on same time.
+        * bug found: only work in foreground & background but not after app being killed. User can still open the app after 23,59,0 and the usage data will be uploaded to firestore
+        * */
+        var totalTime: String
+        var date : String
+
+        //the time when usage data be uploaded to firestore(LOCAL TIME)
+        updateCal.add(Calendar.DATE, 0)
+        updateCal.set(Calendar.HOUR_OF_DAY, 23)
+        updateCal.set(Calendar.MINUTE, 59)
+        updateCal.set(Calendar.SECOND, 0)
+        updateCal.set(Calendar.MILLISECOND, 0)
+
+        val timer = Timer()
+        timer.scheduleAtFixedRate(timerTask {
+            date = convertTime3(updateCal.timeInMillis)
+            totalTime = getUsageStatistics(start_time.timeInMillis, end_time)
+            app.results.addUsage(HistoryModel(uid,user_email,date,totalTime,targetAchieved))
+        },updateCal.time,24*60*60*60)
     }
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
@@ -388,6 +423,13 @@ class HomeFragment : Fragment(), AnkoLogger {
         val date = Date(lastTimeUsed)
         val format = SimpleDateFormat("hh:mm a", Locale.ENGLISH)
         return format.format(date)
+    }
+
+    //for displaying date in past usage fragment
+    private fun convertTime3(lastTimeUsed: Long):String{
+        Date(lastTimeUsed)
+        val format = SimpleDateFormat("EEE, d MMM yyyy", Locale.ENGLISH)
+        return format.format(lastTimeUsed)
     }
 
     //update current time and total time spent on phone.

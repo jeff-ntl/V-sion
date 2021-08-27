@@ -46,8 +46,6 @@ class Login: AppCompatActivity(), View.OnClickListener {
             .requestIdToken("554632916661-1iskngufgan2727js6ibm0e9jps9dafo.apps.googleusercontent.com")
             .requestEmail()
             .build()
-
-
         // [END config_signin]
 
         app.googleSignInClient = GoogleSignIn.getClient(this, gso)
