@@ -30,7 +30,7 @@ import com.example.v_sion.models.ResultModel
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.fragment_home.*
 import kotlinx.android.synthetic.main.fragment_home.view.*
-import kotlinx.android.synthetic.main.fragment_timer.view.*
+import kotlinx.android.synthetic.main.dialog_timer.view.*
 import org.jetbrains.anko.AnkoLogger
 import org.jetbrains.anko.info
 import java.text.SimpleDateFormat
@@ -61,10 +61,10 @@ private var searchResults = mutableListOf<ResultModel>()
 private var totalTime : String = ""
 
 //for SharedPreferences
-private val SHARED_PREFS = "sharedPrefs"
 private val TARGET = "target"
 
-
+//will be reassign with either 'true' or 'false' when 1)onCreate 2)refreshed 3)target time is changed (when compareTimeSpent is called)
+private var targetAchieved = "N/A"
 
 /**
  * A simple [Fragment] subclass.
@@ -157,9 +157,8 @@ class HomeFragment : Fragment(), AnkoLogger {
             showTimeTracking()
             //load target time saved, if any.
             loadTargetTime()
+            compareTimeSpent(targetTimeCount.text.toString(),totalTimeCount.text.toString())
 /*
-
-            targetAchieved = compareTimeSpent(targetTimeCount.text.toString(),totalTimeCount.text.toString())
             scheduleGetUsageStats()
 */
         } else {
@@ -175,8 +174,8 @@ class HomeFragment : Fragment(), AnkoLogger {
             showUsageStats()
             showTimeTracking()
             itemsswipetorefresh.isRefreshing = false
+            compareTimeSpent(targetTimeCount.text.toString(),totalTimeCount.text.toString())
             /*
-            targetAchieved = compareTimeSpent(targetTimeCount.text.toString(),totalTimeCount.text.toString())
             itemsswipetorefresh.isRefreshing = false
             scheduleGetUsageStats()
             */
@@ -392,6 +391,34 @@ class HomeFragment : Fragment(), AnkoLogger {
         startTimeCount.text = convertTime2(start_time.timeInMillis)
         currentTimeCount.text = convertTime2(System.currentTimeMillis())
         totalTimeCount.text = totalTime
+    }
+
+    fun compareTimeSpent(targetTime:String, timeSpent:String){
+        //the regex to find any character A-Z in the string
+        val re = Regex("[a-z]")
+
+        //convert "?h ?m ?s" into ["?", "?", "?"] and "?h ?m" into ["?", "?"]
+        val extractedTargetTime = re.replace(targetTime, "")
+        val foundInTargetTime = extractedTargetTime.split(" ").toTypedArray()
+
+        val extractedTimeSpent = re.replace(timeSpent, "")
+        val foundInTimeSpent = extractedTimeSpent.split(" ").toTypedArray()
+
+        //return the results obtained from comparing target time with actual time spent (true: if target achieved)
+        val result = convertTimeToMs(foundInTargetTime) > convertTimeToMs(foundInTimeSpent)
+        info("result of comparing: $result")
+
+        targetAchieved = result.toString()
+    }
+
+    //calculation: convert the time into ms (to ease the compare process)
+    private fun convertTimeToMs(timeInString:Array<String>):Int{
+        var timeInMs = 0
+
+        for((index,value) in timeInString.withIndex()){
+            timeInMs += value.toInt() * 1000 * Math.pow(60.toDouble(),(2-index).toDouble()).toInt()
+        }
+        return timeInMs
     }
 
 

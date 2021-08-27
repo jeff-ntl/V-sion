@@ -1,31 +1,26 @@
 package com.example.v_sion
 
 import android.app.AlertDialog
-import android.content.Context
-import android.content.SharedPreferences
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
-import androidx.navigation.fragment.findNavController
 import androidx.navigation.ui.*
 import com.example.v_sion.fragments.HomeFragment
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.fragment_home.*
-import kotlinx.android.synthetic.main.fragment_timer.view.*
+import kotlinx.android.synthetic.main.dialog_timer.view.*
 import org.jetbrains.anko.AnkoLogger
 import org.jetbrains.anko.info
 
 class MainActivity : AppCompatActivity(), AnkoLogger {
 
     private lateinit var appBarConfiguration: AppBarConfiguration
-    private lateinit var fm: FragmentManager
     private lateinit var homeFragment: HomeFragment
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -73,7 +68,7 @@ class MainActivity : AppCompatActivity(), AnkoLogger {
         when (item?.itemId) {
             R.id.item_timer -> {
                 //Inflate the dialog with custom view
-                val mDialogView = LayoutInflater.from(this).inflate(R.layout.fragment_timer, null)
+                val mDialogView = LayoutInflater.from(this).inflate(R.layout.dialog_timer, null)
                 //AlertDialogBuilder
                 val mBuilder = AlertDialog.Builder(this)
                     .setView(mDialogView)
@@ -106,6 +101,9 @@ class MainActivity : AppCompatActivity(), AnkoLogger {
                     homeFragment.targetTimeCount.text = targetTime
                     //save target time with SharedPreferences
                     homeFragment.saveTargetTime()
+                    //compare the times
+                    homeFragment.compareTimeSpent(homeFragment.targetTimeCount.text.toString(),homeFragment.totalTimeCount.text.toString())
+
                 }
                 //handle cancel button clicked
                 mDialogView.dialogCancelBtn.setOnClickListener {

@@ -14,7 +14,7 @@ class TimerFragment: DialogFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        var rootView: View = inflater.inflate(R.layout.fragment_timer, container, false)
+        var rootView: View = inflater.inflate(R.layout.dialog_timer, container, false)
         //return super.onCreateView(inflater, container, savedInstanceState)
         return rootView
     }
