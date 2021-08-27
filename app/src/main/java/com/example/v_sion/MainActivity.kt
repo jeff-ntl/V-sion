@@ -12,20 +12,26 @@ import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import androidx.navigation.ui.*
 import com.example.v_sion.fragments.HomeFragment
+import com.example.v_sion.main.MainApp
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.fragment_home.*
 import kotlinx.android.synthetic.main.dialog_timer.view.*
 import org.jetbrains.anko.AnkoLogger
 import org.jetbrains.anko.info
+import org.jetbrains.anko.startActivity
 
 class MainActivity : AppCompatActivity(), AnkoLogger {
 
     private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var homeFragment: HomeFragment
 
+    lateinit var app: MainApp
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        app = application as MainApp
 
         val toolbar: Toolbar = findViewById(R.id.toolbar)
         setSupportActionBar(toolbar)
@@ -111,9 +117,10 @@ class MainActivity : AppCompatActivity(), AnkoLogger {
                     mAlertDialog.dismiss()
                 }
             }
-
+            R.id.item_sign_out -> {
+                signOut()
+            }
         }
-
         return item.onNavDestinationSelected(findNavController(R.id.navHostFragment))
                 || super.onOptionsItemSelected(item)
     }
@@ -123,5 +130,10 @@ class MainActivity : AppCompatActivity(), AnkoLogger {
         return findNavController(R.id.navHostFragment).navigateUp(appBarConfiguration)
     }
 
+    private fun signOut() {
+        app.auth.signOut()
+        startActivity<Login>()
+        finish()
+    }
 
 }

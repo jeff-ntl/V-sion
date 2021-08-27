@@ -26,4 +26,9 @@
         android:orderInCategory="2"
         android:title="@string/menu_item_past_usage_text"
         app:showAsAction="never" />
+    <item
+        android:id="@+id/item_sign_out"
+        android:title="@string/sign_out"
+        android:orderInCategory="3"
+        app:showAsAction="never"/>
 </menu>

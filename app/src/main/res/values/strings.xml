@@ -40,4 +40,6 @@
     <string name="emailpassword_status_fmt">Email User: %1$s (verified: %2$b)</string>
     <string name="emailpassword_title_text">Please Login Below</string>
     <!--END Firebase Resources-->
+    <!--HARD CODED web client id (not best practice)-->
+    <!--END-->
 </resources>
