@@ -1,10 +1,12 @@
 package com.example.v_sion.fragments
 
+import android.app.AlertDialog
 import android.app.AppOpsManager
 import android.app.usage.UsageEvents
 import android.app.usage.UsageStatsManager
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
@@ -28,12 +30,14 @@ import com.example.v_sion.models.ResultModel
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.fragment_home.*
 import kotlinx.android.synthetic.main.fragment_home.view.*
+import kotlinx.android.synthetic.main.fragment_timer.view.*
 import org.jetbrains.anko.AnkoLogger
 import org.jetbrains.anko.info
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
+import com.example.v_sion.fragments.TimerFragment as TimerFragment1
 
 
 // Parameters
@@ -55,6 +59,10 @@ private var results = mutableListOf<ResultModel>()
 private var searchResults = mutableListOf<ResultModel>()
 
 private var totalTime : String = ""
+
+//for SharedPreferences
+private val SHARED_PREFS = "sharedPrefs"
+private val TARGET = "target"
 
 
 
@@ -133,6 +141,8 @@ class HomeFragment : Fragment(), AnkoLogger {
         }
         //return true
         //return super.onCreateOptionsMenu(menu)
+
+
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -145,9 +155,10 @@ class HomeFragment : Fragment(), AnkoLogger {
             totalTime = getUsageStatistics(start_time.timeInMillis, end_time)
             showUsageStats()
             showTimeTracking()
-/*
             //load target time saved, if any.
             loadTargetTime()
+/*
+
             targetAchieved = compareTimeSpent(targetTimeCount.text.toString(),totalTimeCount.text.toString())
             scheduleGetUsageStats()
 */
@@ -310,6 +321,25 @@ class HomeFragment : Fragment(), AnkoLogger {
         }
 
         return convertTime(totalTime)
+    }
+
+    //only called when there's a change in target time (hit confirm button in the target dialog)
+    fun saveTargetTime(){
+        //MODE_PRIVATE: no other app can change our shared preferences
+        val sharedPref: SharedPreferences = requireActivity().getPreferences(Context.MODE_PRIVATE)
+        val editor = sharedPref.edit()
+        editor.putString(TARGET,targetTimeCount.text.toString())
+
+        editor.apply()
+        info("sharedprefs: " + sharedPref.getString(TARGET,"2h 0m"))
+    }
+
+    fun loadTargetTime(){
+        val sharedPref: SharedPreferences = requireActivity().getPreferences(Context.MODE_PRIVATE)
+        //default target time: 2h 0m
+        if(targetTimeCount!=null){
+            targetTimeCount.text = sharedPref.getString(TARGET,"2h 0m")
+        }
     }
 
     //convert packagename(eg: ie.wit.tracko for this app) obtained from UsageStatsManager to app name (eg: Tracko)

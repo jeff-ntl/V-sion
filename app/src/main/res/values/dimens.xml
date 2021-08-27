@@ -3,4 +3,5 @@
     <dimen name="text_size_18sp">18sp</dimen>
     <dimen name="text_size_12sp">12sp</dimen>
     <dimen name="layout_padding">10dp</dimen>
+    <dimen name="small_margin">5dp</dimen>
 </resources>

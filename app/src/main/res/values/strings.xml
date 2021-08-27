@@ -14,4 +14,7 @@
     <string name="menu_item_timer_text">Timer</string>
     <string name="menu_item_my_profile_text">My Profile</string>
     <string name="menu_item_past_usage_text">Past Usage</string>
+    <string name="dialog_confirm_text">Confirm</string>
+    <string name="dialog_cancel_text">Cancel</string>
+    <string name="target_advice_text">Friendly advice:\nTry to target no more than 2 hours everyday.\n\nExcessive mobile use can lead to poor concentration, bad memory, poor sleep quality, increased anxiety, etc.\n\nFor more information, visit https://www.inc.com/christina-desmarais/heres-why-you-need-to-put-your-phone-away-according-to-science.html</string>
 </resources>

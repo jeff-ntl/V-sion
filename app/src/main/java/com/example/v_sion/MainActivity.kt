@@ -1,24 +1,32 @@
 package com.example.v_sion
 
-import androidx.appcompat.app.AppCompatActivity
+import android.app.AlertDialog
+import android.content.Context
+import android.content.SharedPreferences
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuItem
-import android.widget.EditText
-import androidx.appcompat.widget.SearchView
+import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
-import androidx.navigation.fragment.NavHostFragment
-import androidx.navigation.fragment.NavHostFragment.findNavController
+import androidx.navigation.fragment.findNavController
 import androidx.navigation.ui.*
+import com.example.v_sion.fragments.HomeFragment
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.fragment_home.*
+import kotlinx.android.synthetic.main.fragment_timer.view.*
 import org.jetbrains.anko.AnkoLogger
 import org.jetbrains.anko.info
 
 class MainActivity : AppCompatActivity(), AnkoLogger {
 
     private lateinit var appBarConfiguration: AppBarConfiguration
+    private lateinit var fm: FragmentManager
+    private lateinit var homeFragment: HomeFragment
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,8 +50,6 @@ class MainActivity : AppCompatActivity(), AnkoLogger {
         // Bottom Navigation
         setupBottomNavMenu(navController)
         setupActionBar(navController)
-
-
     }
 
     private fun setupBottomNavMenu(navController: NavController) {
@@ -62,8 +68,54 @@ class MainActivity : AppCompatActivity(), AnkoLogger {
     }
 
     // Handle navigation with onNavDestinationSelected helper method,
-    // if the menu item is not meant to navigate, handel with super.onOptionsItemSelected
+    // if the menu item is not meant to navigate, handle with super.onOptionsItemSelected
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item?.itemId) {
+            R.id.item_timer -> {
+                //Inflate the dialog with custom view
+                val mDialogView = LayoutInflater.from(this).inflate(R.layout.fragment_timer, null)
+                //AlertDialogBuilder
+                val mBuilder = AlertDialog.Builder(this)
+                    .setView(mDialogView)
+                    .setTitle("Set your target time")
+                //show dialog
+                val  mAlertDialog = mBuilder.show()
+
+                //set range of time pickers
+                mDialogView.hourPicker.minValue = 0
+                mDialogView.hourPicker.maxValue = 24
+                mDialogView.minutePicker.minValue = 0
+                mDialogView.minutePicker.maxValue = 60
+
+                //handle confirm button clicked
+                mDialogView.dialogConfirmBtn.setOnClickListener {
+
+                    val targetHour = mDialogView.hourPicker.value.toString()
+                    val targetMinute = mDialogView.minutePicker.value.toString()
+                    val targetTime = targetHour + "h " + targetMinute + "m"
+
+                    //dismiss dialog
+                    mAlertDialog.dismiss()
+
+                    //get reference to the on screen fragment
+                    homeFragment = navHostFragment.childFragmentManager.fragments.get(0) as HomeFragment
+                    info("sharedPref frag first: " + navHostFragment.childFragmentManager.fragments.get(0))
+                    info("sharedPref frag: " + navHostFragment.childFragmentManager.fragments.last())
+
+                    //update the target time
+                    homeFragment.targetTimeCount.text = targetTime
+                    //save target time with SharedPreferences
+                    homeFragment.saveTargetTime()
+                }
+                //handle cancel button clicked
+                mDialogView.dialogCancelBtn.setOnClickListener {
+                    //dismiss dialog
+                    mAlertDialog.dismiss()
+                }
+            }
+
+        }
+
         return item.onNavDestinationSelected(findNavController(R.id.navHostFragment))
                 || super.onOptionsItemSelected(item)
     }
