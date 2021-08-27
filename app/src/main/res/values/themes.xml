@@ -32,4 +32,27 @@
         <!-- Customize your theme here. -->
         <item name="android:textColor">@color/text_primary</item>
     </style>
+
+    <!-- Firebase resources -->
+    <style name="ThemeOverlay.FirebaseIcon" parent="Theme.Vsion">
+        <item name="android:layout_marginTop">@dimen/margin_20dp</item>
+        <item name="android:layout_marginBottom">@dimen/margin_20dp</item>
+    </style>
+
+    <style name="ThemeOverlay.MyTextDetail" parent="Theme.Vsion">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:fadeScrollbars">true</item>
+        <item name="android:gravity">center</item>
+        <item name="android:maxLines">5</item>
+        <item name="android:padding">4dp</item>
+        <item name="android:scrollbars">vertical</item>
+        <item name="android:textSize">14sp</item>
+    </style>
+
+    <style name="ThemeOverlay.MyTitleText" parent="Theme.Vsion">
+        <item name="android:gravity">center</item>
+        <item name="android:textSize">30sp</item>
+    </style>
+    <!-- End of Firebase resources -->
 </resources>
