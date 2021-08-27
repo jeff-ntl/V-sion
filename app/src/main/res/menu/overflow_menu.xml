@@ -13,7 +13,8 @@
         android:id="@+id/item_timer"
         android:icon="@drawable/ic_baseline_timer_24"
         android:title="@string/menu_item_timer_text"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="ifRoom"
+        android:visible="false"/>
     <item
         android:id="@+id/profileFragment"
         android:icon="@drawable/ic_baseline_profile"

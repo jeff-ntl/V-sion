@@ -100,9 +100,13 @@ class HomeFragment : Fragment(), AnkoLogger {
     // for showing the search icon on menu
     override fun onPrepareOptionsMenu(menu: Menu) {
         super.onPrepareOptionsMenu(menu)
-        menu.findItem(R.id.menu_search)?.setVisible(true)
+        //menu.findItem(R.id.menu_search)?.setVisible(true)
 
         val searchItem = menu.findItem(R.id.menu_search)
+        val timerItem = menu.findItem(R.id.item_timer)
+        //these two menu items are only visible on home fragment
+        searchItem.setVisible(true)
+        timerItem.setVisible(true)
 
         //for searching
         if(searchItem != null){
