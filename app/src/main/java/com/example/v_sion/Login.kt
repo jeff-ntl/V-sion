@@ -52,8 +52,6 @@ class Login: AppCompatActivity(), View.OnClickListener {
 
         sign_in_button.setSize(SignInButton.SIZE_WIDE)
         sign_in_button.setColorScheme(0)
-
-
     }
 
     // [START on_start_check_user]
@@ -173,7 +171,6 @@ class Login: AppCompatActivity(), View.OnClickListener {
         } else {
             fieldPassword.error = null
         }
-
         return valid
     }
 

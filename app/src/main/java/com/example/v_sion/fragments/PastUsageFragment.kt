@@ -65,19 +65,6 @@ class PastUsageFragment : Fragment(), HistoryListener, AnkoLogger {
         return inflater.inflate(R.layout.fragment_past_usage, container, false)
     }
 
-    //get usage history from firestore
-    private fun getUsageHistory(){
-        histories.clear()
-        app.results.readUsage (uid){
-            info(it.size.toString())
-            histories = it.toMutableList()
-            info("histories size is : " + histories.count().toString())
-            info("histories is : " + histories)
-
-            showUsageHistory()
-        }
-    }
-
     //for recyclerview...
     private fun showUsageHistory(){
         viewManager = LinearLayoutManager(activity)
@@ -90,6 +77,19 @@ class PastUsageFragment : Fragment(), HistoryListener, AnkoLogger {
             adapter = viewAdapter
         }
         swipeToDelete()
+    }
+
+    //get usage history from firestore
+    private fun getUsageHistory(){
+        histories.clear()
+        app.results.readUsage (uid){
+            info(it.size.toString())
+            histories = it.toMutableList()
+            info("histories size is : " + histories.count().toString())
+            info("histories is : " + histories)
+
+            showUsageHistory()
+        }
     }
 
     private fun swipeToDelete(){
@@ -125,7 +125,6 @@ class PastUsageFragment : Fragment(), HistoryListener, AnkoLogger {
         }
         val itemTouchDeleteHelper = ItemTouchHelper(swipeDeleteHandler)
         itemTouchDeleteHelper.attachToRecyclerView(recyclerView)
-
     }
 
     override fun triggerDelete(history: HistoryModel) {

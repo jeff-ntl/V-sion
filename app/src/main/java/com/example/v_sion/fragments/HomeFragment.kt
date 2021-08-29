@@ -1,6 +1,5 @@
 package com.example.v_sion.fragments
 
-import android.app.AlertDialog
 import android.app.AppOpsManager
 import android.app.usage.UsageEvents
 import android.app.usage.UsageStatsManager
@@ -40,17 +39,12 @@ import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
 import kotlin.concurrent.timerTask
-import com.example.v_sion.fragments.TimerFragment as TimerFragment1
 
 
 // Parameters
-private var hour_in_mil = (1000 * 60 * 60).toLong()
 private var end_time = System.currentTimeMillis()
-//private var start_time = end_time - hour_in_mil
 private val start_time: Calendar = Calendar.getInstance()
 private val updateCal: Calendar = Calendar.getInstance()
-
-private var strMsg : String = ""
 
 // for recyclerView
 private lateinit var recyclerView: RecyclerView
@@ -99,7 +93,6 @@ class HomeFragment : Fragment(), AnkoLogger {
         start_time.set(Calendar.MINUTE, 0)
         start_time.set(Calendar.SECOND, 0)
         start_time.set(Calendar.MILLISECOND, 0)
-
     }
 
     override fun onCreateView(
@@ -115,10 +108,10 @@ class HomeFragment : Fragment(), AnkoLogger {
     // for showing the search icon on menu
     override fun onPrepareOptionsMenu(menu: Menu) {
         super.onPrepareOptionsMenu(menu)
-        //menu.findItem(R.id.menu_search)?.setVisible(true)
 
         val searchItem = menu.findItem(R.id.menu_search)
         val timerItem = menu.findItem(R.id.item_timer)
+
         //these two menu items are only visible on home fragment
         searchItem.setVisible(true)
         timerItem.setVisible(true)
@@ -158,10 +151,6 @@ class HomeFragment : Fragment(), AnkoLogger {
                 }
             })
         }
-        //return true
-        //return super.onCreateOptionsMenu(menu)
-
-
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -202,7 +191,6 @@ class HomeFragment : Fragment(), AnkoLogger {
         viewAdapter = ResultAdapter(searchResults)
 
         recyclerView = my_recycler_view.apply {
-
             // use a linear layout manager
             layoutManager = viewManager
             // specify an viewAdapter
@@ -215,7 +203,7 @@ class HomeFragment : Fragment(), AnkoLogger {
     private fun checkUsageStatsPermission(context: Context?): Boolean {
         val appOpsManager: AppOpsManager?
         appOpsManager = context?.getSystemService(Context.APP_OPS_SERVICE)!! as AppOpsManager
-        //use unsafeCheckOpNoThrow for API 29....?????????!!!
+        //use unsafeCheckOpNoThrow for API 29?
         val mode: Int = appOpsManager.checkOpNoThrow(
             AppOpsManager.OPSTR_GET_USAGE_STATS,
             android.os.Process.myUid(),
@@ -346,11 +334,9 @@ class HomeFragment : Fragment(), AnkoLogger {
 
             // Concatenating data to show in a text view. You may do according to your requirement
             for (appUsageInfo in smallInfoList) {
-                //strMsg += (convertToAppName(appUsageInfo.packageName.toString()) + " : " + convertTime(appUsageInfo.timeInForeground) + " : " + appUsageInfo.launchCount + "\n\n")
                 results.add(ResultModel(appUsageInfo.packageName.toString(), getAppIcon(appUsageInfo.packageName.toString()), convertToAppName(
                     appUsageInfo.packageName.toString()), appUsageInfo.timeInForeground, convertTime(appUsageInfo.timeInForeground), appUsageInfo.launchCount))
             }
-            //info("strMsg: " + strMsg)
             info("strMsg: " + results)
             results.sortByDescending { it.timeInForeground }
             searchResults.addAll(results)
@@ -359,77 +345,6 @@ class HomeFragment : Fragment(), AnkoLogger {
         }
 
         return convertTime(totalTime)
-    }
-
-    //only called when there's a change in target time (hit confirm button in the target dialog)
-    fun saveTargetTime(){
-        //MODE_PRIVATE: no other app can change our shared preferences
-        val sharedPref: SharedPreferences = requireActivity().getPreferences(Context.MODE_PRIVATE)
-        val editor = sharedPref.edit()
-        editor.putString(TARGET,targetTimeCount.text.toString())
-
-        editor.apply()
-        info("sharedprefs: " + sharedPref.getString(TARGET,"2h 0m"))
-    }
-
-    fun loadTargetTime(){
-        val sharedPref: SharedPreferences = requireActivity().getPreferences(Context.MODE_PRIVATE)
-        //default target time: 2h 0m
-        if(targetTimeCount!=null){
-            targetTimeCount.text = sharedPref.getString(TARGET,"2h 0m")
-        }
-    }
-
-    //convert packagename(eg: ie.wit.tracko for this app) obtained from UsageStatsManager to app name (eg: Tracko)
-    private fun convertToAppName(packageName: String):String{
-        //val packageManager: PackageManager = applicationContext.packageManager
-        val packageManager: PackageManager = requireContext().packageManager
-
-        var applicationInfo: ApplicationInfo?
-        lateinit var applicationName: String
-
-        try{
-            applicationInfo = packageManager.getApplicationInfo(packageName, 0)
-        }catch(e: PackageManager.NameNotFoundException){
-            applicationInfo = null
-        }
-        if(applicationInfo == null){
-            applicationName = "Unknown"
-        }else{
-            applicationName = packageManager.getApplicationLabel(applicationInfo).toString()
-        }
-        return applicationName
-    }
-
-    //get app icon by giving known package name.
-    private fun getAppIcon(packageName: String): Bitmap {
-        val appIconBitMap: Bitmap?
-        //info("icon is: " + packageManager.getApplicationIcon(packageName))
-        //appIconBitMap = packageManager.getApplicationIcon(packageName).toBitmap()
-        //info("icon is: " + requireContext().packageManager.getApplicationIcon(packageName))
-        appIconBitMap = requireContext().packageManager.getApplicationIcon(packageName).toBitmap()
-        return appIconBitMap
-    }
-
-    // Convert Time in ms (Long) to "1h 2m 3s" (String)
-    private fun convertTime(count: Long): String{
-        val hours = ((count / (1000*60*60)) % 24).toInt()
-        val minutes = ((count / (1000*60)) % 60).toInt()
-        val seconds = ((count/ 1000) % 60).toInt()
-        return "" + hours + "h " + minutes + "m " + seconds + "s"
-    }
-
-    private fun convertTime2(lastTimeUsed: Long):String{
-        val date = Date(lastTimeUsed)
-        val format = SimpleDateFormat("hh:mm a", Locale.ENGLISH)
-        return format.format(date)
-    }
-
-    //for displaying date in past usage fragment
-    private fun convertTime3(lastTimeUsed: Long):String{
-        Date(lastTimeUsed)
-        val format = SimpleDateFormat("EEE, d MMM yyyy", Locale.ENGLISH)
-        return format.format(lastTimeUsed)
     }
 
     //update current time and total time spent on phone.
@@ -457,6 +372,73 @@ class HomeFragment : Fragment(), AnkoLogger {
         targetAchieved = result.toString()
     }
 
+    //only called when there's a change in target time (hit confirm button in the target dialog)
+    fun saveTargetTime(){
+        //MODE_PRIVATE: no other app can change our shared preferences
+        val sharedPref: SharedPreferences = requireActivity().getPreferences(Context.MODE_PRIVATE)
+        val editor = sharedPref.edit()
+        editor.putString(TARGET,targetTimeCount.text.toString())
+
+        editor.apply()
+        info("sharedprefs: " + sharedPref.getString(TARGET,"2h 0m"))
+    }
+
+    fun loadTargetTime(){
+        val sharedPref: SharedPreferences = requireActivity().getPreferences(Context.MODE_PRIVATE)
+        //default target time: 2h 0m
+        if(targetTimeCount!=null){
+            targetTimeCount.text = sharedPref.getString(TARGET,"2h 0m")
+        }
+    }
+
+    //convert packagename obtained from UsageStatsManager to app name
+    private fun convertToAppName(packageName: String):String{
+        val packageManager: PackageManager = requireContext().packageManager
+
+        var applicationInfo: ApplicationInfo?
+        lateinit var applicationName: String
+
+        try{
+            applicationInfo = packageManager.getApplicationInfo(packageName, 0)
+        }catch(e: PackageManager.NameNotFoundException){
+            applicationInfo = null
+        }
+        if(applicationInfo == null){
+            applicationName = "Unknown"
+        }else{
+            applicationName = packageManager.getApplicationLabel(applicationInfo).toString()
+        }
+        return applicationName
+    }
+
+    //get app icon by giving known package name.
+    private fun getAppIcon(packageName: String): Bitmap {
+        val appIconBitMap: Bitmap?
+        appIconBitMap = requireContext().packageManager.getApplicationIcon(packageName).toBitmap()
+        return appIconBitMap
+    }
+
+    // Convert Time in ms (Long) to "1h 2m 3s" (String)
+    private fun convertTime(count: Long): String{
+        val hours = ((count / (1000*60*60)) % 24).toInt()
+        val minutes = ((count / (1000*60)) % 60).toInt()
+        val seconds = ((count/ 1000) % 60).toInt()
+        return "" + hours + "h " + minutes + "m " + seconds + "s"
+    }
+
+    private fun convertTime2(lastTimeUsed: Long):String{
+        val date = Date(lastTimeUsed)
+        val format = SimpleDateFormat("hh:mm a", Locale.ENGLISH)
+        return format.format(date)
+    }
+
+    //for displaying date in past usage fragment
+    private fun convertTime3(lastTimeUsed: Long):String{
+        Date(lastTimeUsed)
+        val format = SimpleDateFormat("EEE, d MMM yyyy", Locale.ENGLISH)
+        return format.format(lastTimeUsed)
+    }
+
     //calculation: convert the time into ms (to ease the compare process)
     private fun convertTimeToMs(timeInString:Array<String>):Int{
         var timeInMs = 0
@@ -466,6 +448,5 @@ class HomeFragment : Fragment(), AnkoLogger {
         }
         return timeInMs
     }
-
 
 }
